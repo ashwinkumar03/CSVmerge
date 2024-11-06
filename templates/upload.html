@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSV Merger</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        input[type="file"] {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        .requirements {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+    <script>
+        let formSubmitted = false;
+
+        function showLoading() {
+            if (!validateFiles()) {
+                return false;
+            }
+
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('loading').style.display = 'block';
+            formSubmitted = true;
+
+            // Start monitoring for file download
+            setTimeout(checkForDownload, 1000);
+            return true;
+        }
+
+        function checkForDownload() {
+            // If the form was submitted and enough time has passed for the response
+            if (formSubmitted) {
+                // Reset the form and loading state
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('uploadForm').reset();
+                formSubmitted = false;
+            }
+        }
+
+        function validateFiles() {
+            const file1 = document.getElementsByName('file1')[0].files[0];
+            const file2 = document.getElementsByName('file2')[0].files[0];
+
+            if (!file1 || !file2) {
+                alert('Please select both File 1 and File 2');
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('loading').style.display = 'none';
+                return false;
+            }
+
+            const maxSize = 50 * 1024 * 1024; // 50MB
+            if (file1.size > maxSize || file2.size > maxSize) {
+                alert('File size should not exceed 50MB');
+                document.getElementById('submitBtn').disabled = false;
+                document.getElementById('loading').style.display = 'none';
+                return false;
+            }
+
+            return true;
+        }
+
+        function logFileSelected(inputId) {
+            console.log(inputId + " file chosen.");
+        }
+
+        // Handle errors by resetting the form state
+        window.onerror = function() {
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('loading').style.display = 'none';
+            formSubmitted = false;
+        };
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>CSV Merger</h1>
+
+        <form id="uploadForm" action="/merge" method="post" enctype="multipart/form-data" onsubmit="return showLoading()">
+            <div class="form-group">
+                <label for="file1">CSV File 1: (Required)</label>
+                <input type="file" id="file1" name="file1" accept=".csv" required onchange="logFileSelected('CSV File 1')">
+            </div>
+
+            <div class="form-group">
+                <label for="file2">CSV File 2: (Required)</label>
+                <input type="file" id="file2" name="file2" accept=".csv" required onchange="logFileSelected('CSV File 2')">
+            </div>
+
+            <div class="form-group">
+                <label for="file3">CSV File 3: (Optional)</label>
+                <input type="file" id="file3" name="file3" accept=".csv" onchange="logFileSelected('CSV File 3')">
+            </div>
+
+            <button type="submit" id="submitBtn">Merge and Download</button>
+
+            <div id="loading" class="loading">
+                Processing... Please wait...
+            </div>
+        </form>
+
+        <div class="requirements">
+            <h3>Requirements:</h3>
+            <ul>
+                <li>Files must be in CSV format</li>
+                <li>Maximum file size: 50MB</li>
+                <li>Files should have a 'Website' column for matching</li>
+                <li>At least two files are required</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
